@@ -18,7 +18,7 @@ const registerUser = async (req, res)=>{
         //hash the password
         // Salt is random data added to the password before hashing to make it stronger.
         const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hashedPassword(password, salt)
+        const hashedPassword = await bcrypt.hash(password, salt)
 
         //creating the user
         const user = await User.create({
@@ -46,6 +46,35 @@ const registerUser = async (req, res)=>{
     }
 };
 
+//login
+const loginUser = async(req, res)=>{
+    try{
+        const {email, password} = await req.body;
+
+        //check if the user exists
+        const user = await User.findOne({email});
+
+        //check if the password matches
+        //comparing the plain text entered password with the hashed one.
+        if(user && (await bcrypt.compare(password, user.password))){
+            res.status(200).json({
+                _id: user.id,
+                name : user.name,
+                email : user.email,
+                role : user.role,
+                token : generateToken(user._id)
+            })
+        }else{
+            res.status(401).json({
+                message : "Invalid email or password"
+            })
+        }
+    }
+    catch(error){
+        res.status(500).json({ message : error.message });
+    }
+}
+
 //Helper Function to generate token
 const generateToken = (id)=>{
     return jwt.sign({id}, process.env.JWT_SECRET, {
@@ -55,4 +84,5 @@ const generateToken = (id)=>{
 
 module.exports ={
     registerUser,
+    loginUser,
 }
