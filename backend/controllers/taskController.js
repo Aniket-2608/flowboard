@@ -11,6 +11,24 @@ const getTasks = async (req, res)=>{
     res.status(200).json(tasks);
 }
 
+// @desc    Get a single task
+// @route   GET /api/tasks/:id
+// @access  Private
+
+const getTask = async(req, res)=>{
+    const task = await Task.findById(req.params.id);
+    if(!task){
+        return res.status(404).json({message : 'Task not found'});
+    }
+
+    //Checking ownership
+    if(task.user.toString() != req.user.id){
+        return res.status(401).json({message : 'User not authorized'})
+    }
+
+    res.status(200).json(task);
+}
+
 // @desc    Create a new task
 // @route   POST /api/tasks
 // @access  Private
@@ -71,5 +89,5 @@ const deleteTask = async (req, res)=>{
 }
 
 module.exports = {
-    getTasks, createTask, updateTask, deleteTask
+    getTasks, createTask, updateTask, deleteTask, getTask
 }

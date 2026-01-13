@@ -1,0 +1,95 @@
+<div class="min-h-screen bg-gray-50 flex flex-col">
+
+  <nav class="bg-white shadow-sm px-6 py-4 flex justify-between items-center z-10">
+    <div class="flex items-center gap-2">
+      <span class="text-2xl">📋</span>
+      <h1 class="text-xl font-bold text-gray-800">FlowBoard</h1>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <span class="text-gray-600 font-medium">
+        {{ authService.currentUser()?.name }}
+      </span>
+      <button (click)="authService.logout()" class="text-red-500 hover:text-red-700 text-sm font-semibold transition">
+        Logout
+      </button>
+    </div>
+  </nav>
+
+  <div class="flex-1 p-8 max-w-7xl mx-auto w-full">
+
+    <div class="flex justify-between items-center mb-8">
+      <h2 class="text-2xl font-bold text-gray-800">My Tasks</h2>
+      <button (click)="navigateToCreate('new')"
+        class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg shadow-md hover:shadow-lg transition flex items-center gap-2 font-medium">
+        <span>+</span> New Task
+      </button>
+    </div>
+
+    <div *ngIf="taskService.tasks().length === 0"
+      class="flex flex-col items-center justify-center py-20 bg-white rounded-xl shadow-sm border border-dashed border-gray-300">
+      <div class="bg-blue-50 p-4 rounded-full mb-4">
+        <span class="text-4xl">📝</span>
+      </div>
+      <h3 class="text-xl font-semibold text-gray-800 mb-2">No tasks yet</h3>
+      <p class="text-gray-500 mb-6 text-center max-w-md">
+        Your board is looking a little empty. Create your first task to get started!
+      </p>
+
+      <button (click)="navigateToCreate('new')" class="text-blue-600 font-semibold hover:text-blue-800 hover:underline">
+        Create a Task Now
+      </button>
+    </div>
+
+    <div *ngIf="taskService.tasks().length > 0" class="mt-8">
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-start h-full">
+
+        <div class="bg-gray-100 rounded-xl p-4 min-h-[500px] flex flex-col shadow-inner">
+          <h3 class="font-bold text-gray-700 mb-4 flex items-center justify-between">
+            TO DO
+            <span class="bg-gray-200 text-gray-600 px-2 py-1 rounded text-xs">{{ todoTasks.length }}</span>
+          </h3>
+
+          <div cdkDropList [cdkDropListData]="todoTasks" [cdkDropListConnectedTo]="['list-inprogress', 'list-done']"
+            id="list-todo" (cdkDropListDropped)="onDrop($event, 'todo')" class="flex-1 flex flex-col gap-3">
+            <div *ngFor="let task of todoTasks; trackBy: trackByTask" cdkDrag [cdkDragData]="task"
+              class="cursor-grab active:cursor-grabbing">
+              <app-task-card [task]="task" (edit)="navigateToCreate(task._id)"></app-task-card>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-blue-50 rounded-xl p-4 min-h-[500px] flex flex-col shadow-inner border border-blue-100">
+          <h3 class="font-bold text-blue-800 mb-4 flex items-center justify-between">
+            IN PROGRESS
+            <span class="bg-blue-200 text-blue-800 px-2 py-1 rounded text-xs">{{ inProgressTasks.length }}</span>
+          </h3>
+
+          <div cdkDropList [cdkDropListData]="inProgressTasks" [cdkDropListConnectedTo]="['list-todo', 'list-done']"
+            id="list-inprogress" (cdkDropListDropped)="onDrop($event, 'inprogress')" class="flex-1 flex flex-col gap-3">
+            <div *ngFor="let task of inProgressTasks; trackBy: trackByTask" cdkDrag [cdkDragData]="task"
+              class="cursor-grab active:cursor-grabbing">
+              <app-task-card [task]="task" (edit)="navigateToCreate(task._id)"></app-task-card>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-green-50 rounded-xl p-4 min-h-[500px] flex flex-col shadow-inner border border-green-100">
+          <h3 class="font-bold text-green-800 mb-4 flex items-center justify-between">
+            DONE
+            <span class="bg-green-200 text-green-800 px-2 py-1 rounded text-xs">{{ doneTasks.length }}</span>
+          </h3>
+
+          <div cdkDropList [cdkDropListData]="doneTasks" [cdkDropListConnectedTo]="['list-todo', 'list-inprogress']"
+            id="list-done" (cdkDropListDropped)="onDrop($event, 'done')" class="flex-1 flex flex-col gap-3">
+            <div *ngFor="let task of doneTasks; trackBy: trackByTask" cdkDrag [cdkDragData]="task"
+              class="cursor-grab active:cursor-grabbing">
+              <app-task-card [task]="task" (edit)="navigateToCreate(task._id)"></app-task-card>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
