@@ -1,0 +1,29 @@
+<nav class="bg-white shadow-sm px-6 py-4 flex justify-between items-center z-50 relative">
+  <div class="flex items-center gap-2 cursor-pointer" routerLink="/">
+    <span class="text-2xl">📋</span>
+    <h1 class="text-xl font-bold text-gray-800">FlowBoard</h1>
+  </div>
+  
+  <div class="flex items-center gap-4">
+    
+    <ng-container *ngIf="authService.currentUser()">
+      <span class="text-gray-600 font-medium hidden md:block">
+        Welcome, {{ authService.currentUser()?.name }}
+      </span>
+      <button 
+        (click)="authService.logout()" 
+        class="text-red-500 hover:text-red-700 text-sm font-semibold transition border border-red-100 px-3 py-1 rounded hover:bg-red-50"
+      >
+        Logout
+      </button>
+    </ng-container>
+
+    <ng-container *ngIf="!authService.currentUser()">
+      <a routerLink="/login" class="text-gray-600 hover:text-blue-600 font-medium transition">Login</a>
+      <a routerLink="/register" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition shadow-sm">
+        Get Started
+      </a>
+    </ng-container>
+
+  </div>
+</nav>

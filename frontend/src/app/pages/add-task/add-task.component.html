@@ -2,7 +2,7 @@
   <div class="bg-white rounded-xl shadow-lg w-full max-w-lg overflow-hidden">
     
     <div class="bg-blue-600 px-6 py-4 flex justify-between items-center">
-      <h2 class="text-white text-xl font-bold">Create New Task</h2>
+      <h2 class="text-white text-xl font-bold">{{ isEditMode() ? 'Edit Task' : 'Create New Task' }}</h2>
       <button routerLink="/dashboard" class="text-blue-100 hover:text-white">✕</button>
     </div>
 
@@ -38,12 +38,12 @@
         </div>
       </div>
 
-      <div class="bg-blue-600 px-6 py-4 flex justify-between items-center">
+      <!-- <div class="bg-blue-600 px-6 py-4 flex justify-between items-center">
         <h2 class="text-white text-xl font-bold">
             {{ isEditMode() ? 'Edit Task' : 'Create New Task' }}
         </h2>
         <button routerLink="/dashboard" class="text-blue-100 hover:text-white">✕</button>
-     </div>
+     </div> -->
 
       <div class="pt-4 flex justify-end gap-3">
         <button type="button" routerLink="/dashboard" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Cancel</button>

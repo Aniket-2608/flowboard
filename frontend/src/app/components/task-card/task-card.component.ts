@@ -11,4 +11,5 @@ import { Task } from '../../models/task.model';
 export class TaskCardComponent {
   @Input({ required: true }) task!: Task;
   @Output() edit = new EventEmitter<void>();
+  @Output() delete = new EventEmitter<void>();
 }

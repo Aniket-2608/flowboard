@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, effect } from '@angular/core';
+import { Component, OnInit, inject, effect, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { DragDropModule, CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
@@ -6,6 +6,7 @@ import { AuthService } from '../../services/auth.service';
 import { TaskService } from '../../services/task.service';
 import { Task, TaskStatus } from '../../models/task.model';
 import { TaskCardComponent } from '../../components/task-card/task-card.component';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -21,6 +22,10 @@ import { TaskCardComponent } from '../../components/task-card/task-card.componen
 export class DashboardComponent implements OnInit {
   authService = inject(AuthService);
   taskService = inject(TaskService);
+  toastService = inject(ToastService);
+  searchQuery = signal('');
+  priorityFilter = signal('all');
+
   private router = inject(Router);
 
   // Regular arrays for CDK - NOT computed signals
@@ -32,7 +37,17 @@ export class DashboardComponent implements OnInit {
     // Use effect to watch the signal and update our arrays
     effect(() => {
       const allTasks = this.taskService.tasks();
-      this.updateColumns(allTasks);
+      const query = this.searchQuery().toLocaleLowerCase();
+      const priority = this.priorityFilter();
+
+      const filtered = allTasks.filter(task =>{
+        const matchedSearch = task.title.toLowerCase().includes(query) || task.description?.toLowerCase().includes(query);
+        const matchedPriority = priority === 'all' ? true : task.priority === priority;
+        return matchedSearch && matchedPriority
+
+      })
+
+      this.updateColumns(filtered);
     });
   }
 
@@ -88,5 +103,24 @@ export class DashboardComponent implements OnInit {
         }
       });
     }
+  }
+
+  deleteTask(id:string){
+    if(confirm('Are you sure you want to delete this task?')){
+     this.taskService.deletTask(id).subscribe({
+      next : ()=>{
+        this.toastService.show('Task Deleted', 'success')
+      },
+      error: () => this.toastService.show('Failed to delete task', 'error')
+     })
+    }
+  }
+
+  onSearch(event: Event) {
+    this.searchQuery.set((event.target as HTMLInputElement).value);
+  }
+
+  onFilterPriority(event: Event) {
+    this.priorityFilter.set((event.target as HTMLSelectElement).value);
   }
 }

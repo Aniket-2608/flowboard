@@ -1,25 +1,25 @@
 <div class="min-h-screen bg-gray-50 flex flex-col">
-
-  <nav class="bg-white shadow-sm px-6 py-4 flex justify-between items-center z-10">
-    <div class="flex items-center gap-2">
-      <span class="text-2xl">📋</span>
-      <h1 class="text-xl font-bold text-gray-800">FlowBoard</h1>
-    </div>
-
-    <div class="flex items-center gap-4">
-      <span class="text-gray-600 font-medium">
-        {{ authService.currentUser()?.name }}
-      </span>
-      <button (click)="authService.logout()" class="text-red-500 hover:text-red-700 text-sm font-semibold transition">
-        Logout
-      </button>
-    </div>
-  </nav>
-
   <div class="flex-1 p-8 max-w-7xl mx-auto w-full">
 
     <div class="flex justify-between items-center mb-8">
       <h2 class="text-2xl font-bold text-gray-800">My Tasks</h2>
+      <div
+        class="bg-white p-4 rounded-xl shadow-sm mb-8 flex flex-col md:flex-row gap-4 items-center border border-gray-100">
+
+        <div class="relative flex-1 w-full">
+          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+          <input type="text" placeholder="Search tasks..." (input)="onSearch($event)"
+            class="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50 focus:bg-white transition">
+        </div>
+
+        <select (change)="onFilterPriority($event)"
+          class="w-full md:w-auto px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white cursor-pointer">
+          <option value="all">All Priorities</option>
+          <option value="low">🟢 Low</option>
+          <option value="medium">🟡 Medium</option>
+          <option value="high">🔴 High</option>
+        </select>
+      </div>
       <button (click)="navigateToCreate('new')"
         class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg shadow-md hover:shadow-lg transition flex items-center gap-2 font-medium">
         <span>+</span> New Task
@@ -55,7 +55,8 @@
             id="list-todo" (cdkDropListDropped)="onDrop($event, 'todo')" class="flex-1 flex flex-col gap-3">
             <div *ngFor="let task of todoTasks; trackBy: trackByTask" cdkDrag [cdkDragData]="task"
               class="cursor-grab active:cursor-grabbing">
-              <app-task-card [task]="task" (edit)="navigateToCreate(task._id)"></app-task-card>
+              <app-task-card [task]="task" (edit)="navigateToCreate(task._id)"
+                (delete)="deleteTask(task._id)"></app-task-card>
             </div>
           </div>
         </div>
@@ -70,7 +71,8 @@
             id="list-inprogress" (cdkDropListDropped)="onDrop($event, 'inprogress')" class="flex-1 flex flex-col gap-3">
             <div *ngFor="let task of inProgressTasks; trackBy: trackByTask" cdkDrag [cdkDragData]="task"
               class="cursor-grab active:cursor-grabbing">
-              <app-task-card [task]="task" (edit)="navigateToCreate(task._id)"></app-task-card>
+              <app-task-card [task]="task" (edit)="navigateToCreate(task._id)"
+                (delete)="deleteTask(task._id)"></app-task-card>
             </div>
           </div>
         </div>
@@ -85,7 +87,8 @@
             id="list-done" (cdkDropListDropped)="onDrop($event, 'done')" class="flex-1 flex flex-col gap-3">
             <div *ngFor="let task of doneTasks; trackBy: trackByTask" cdkDrag [cdkDragData]="task"
               class="cursor-grab active:cursor-grabbing">
-              <app-task-card [task]="task" (edit)="navigateToCreate(task._id)"></app-task-card>
+              <app-task-card [task]="task" (edit)="navigateToCreate(task._id)" (delete)="deleteTask(task._id)">
+              </app-task-card>
             </div>
           </div>
         </div>
