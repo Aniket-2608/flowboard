@@ -9,7 +9,14 @@ dotenv.config();
 const app = express();
 
 //Middelwares
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:4200',
+    'https://fluxalab.vercel.app/', // 👈 Your NEW clean URL
+    // You can keep the old one too if you want, or remove it
+  ],
+  credentials: true
+}));
 app.use(express.json());
 
 //Routes
