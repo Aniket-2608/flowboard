@@ -21,20 +21,17 @@ export class RegisterComponent {
 
   isLoading = signal<boolean>(false);
 
-  // 1. Defined the Form with the Custom Validator attached to the GROUP
   registerForm: FormGroup = this.fb.group({
     name: ['', [Validators.required, Validators.minLength(3)]],
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(6)]],
     confirmPassword: ['', [Validators.required]]
-  }, { validators: this.passwordMatchValidator }); // <--- Applied here
+  }, { validators: this.passwordMatchValidator });
 
-  // 2. Custom Validator Function
   passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
     const password = control.get('password')?.value;
     const confirmPassword = control.get('confirmPassword')?.value;
 
-    // If passwords don't match, return an error object
     return password === confirmPassword ? null : { mismatch: true };
   }
 
@@ -46,8 +43,6 @@ export class RegisterComponent {
 
     this.isLoading.set(true);
 
-    // 3. Prepare Data (Exclude confirmPassword)
-    // We strictly map only the fields the Backend expects
     const registerData: RegisterRequest = {
       name: this.registerForm.value.name,
       email: this.registerForm.value.email,
@@ -58,7 +53,7 @@ export class RegisterComponent {
       next: (res) => {
         this.isLoading.set(false);
         this.toastService.show('Account created successfully!', 'success');
-        this.router.navigate(['/login']); // Redirect to login after registration
+        this.router.navigate(['/login']);
       },
       error: (err) => {
         this.isLoading.set(false);

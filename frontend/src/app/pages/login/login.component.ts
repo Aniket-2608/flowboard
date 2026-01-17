@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms'; // <--- Reactive Forms
+import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
@@ -19,14 +19,13 @@ export class LoginComponent {
   private router = inject(Router);
   private toastService = inject(ToastService);
 
-  // 1. Reactive Form Definition
   loginForm: FormGroup = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(6)]]
   });
 
-  // 2. Signals for Local State
   isLoading = signal<boolean>(false);
+  showPassword = signal<boolean>(false);
 
   onSubmit() {
     if (this.loginForm.invalid) {
@@ -34,21 +33,25 @@ export class LoginComponent {
       return;
     }
 
-    this.isLoading.set(true); // Start loading
+    this.isLoading.set(true);
 
     const loginData: LoginRequest = this.loginForm.value;
 
     this.authService.login(loginData).subscribe({
       next: (res) => {
-        this.isLoading.set(false); // Stop loading
+        this.isLoading.set(false);
         this.toastService.show('Welcome back!', 'success');
-        this.router.navigate(['/dashboard']); // We will enable this later
+        this.router.navigate(['/dashboard']);
       },
       error: (err) => {
-        this.isLoading.set(false); // Stop loading
+        this.isLoading.set(false);
         const msg = err.error.message || 'Login failed';
         this.toastService.show(msg, 'error');
       }
     });
+  }
+
+  togglePassword() {
+    this.showPassword.update(value => !value);
   }
 }
