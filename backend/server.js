@@ -12,7 +12,8 @@ const app = express();
 app.use(cors({
   origin: [
     'http://localhost:4200',
-    'https://fluxalab.vercel.app' // Your frontend URL
+    'https://fluxalab.vercel.app', // Your Frontend
+    'https://flowboard-api.vercel.app' // (Optional) Your future backend URL
   ],
   credentials: true
 }));
@@ -44,6 +45,9 @@ app.get('/', (req, res) => {
 
 // Start the Server
 const PORT = process.env.PORT || 5001;
-app.listen(PORT, () => {
-    console.log(`Server is running on ${PORT}`);
-});
+
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(PORT, () => {
+        console.log(`Server is running on ${PORT}`);
+    });
+}
