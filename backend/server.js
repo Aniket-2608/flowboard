@@ -3,52 +3,47 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 
-//load config
+// Load config
 dotenv.config();
 
 const app = express();
 
-//Middelwares
+// Middlewares
 app.use(cors({
   origin: [
     'http://localhost:4200',
-    'https://fluxalab.vercel.app', // 👈 Your NEW clean URL
-    // You can keep the old one too if you want, or remove it
+    'https://fluxalab.vercel.app' // Your frontend URL
   ],
   credentials: true
 }));
+
 app.use(express.json());
 
-//Routes
+// Routes
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/tasks', require('./routes/taskRoutes'));
 
-//Database connection 
-const connectDB = async () =>{
-    try{
+// Database connection 
+const connectDB = async () => {
+    try {
         const conn = await mongoose.connect(process.env.MONGO_URI);
-        console.log(`MongoDB Connected : ${conn.connection.host}`);
-    }
-    catch(error){
-        console.error(`Error : ${error.message}`);
+        console.log(`MongoDB Connected: ${conn.connection.host}`);
+    } catch (error) {
+        console.error(`Error: ${error.message}`);
         process.exit(1);
     }
 }
 
-//Execute Connection
+// Execute Connection
 connectDB();
 
-//Test Route
-app.get('/', (req, res)=>{
-    const reqBody = req.body;
-    if(reqBody.id !=0){
-        console.log(reqBody);
-    }
+// ✅ FIXED Test Route (Simple and Safe)
+app.get('/', (req, res) => {
     res.send("API is Running");
-})
+});
 
-//Start the Server
+// Start the Server
 const PORT = process.env.PORT || 5001;
-app.listen(PORT, ()=>{
-    console.log(`server is running on ${PORT} `)
-})
+app.listen(PORT, () => {
+    console.log(`Server is running on ${PORT}`);
+});

@@ -4,8 +4,8 @@ const sendEmail = async (to, subject, html) => {
   try {
     const transporter = nodemailer.createTransport({
       host: 'smtp.gmail.com', // Explicitly use Gmail host
-      port: 465,              // 👈 CHANGE TO 465 (SSL)
-      secure: true,           // 👈 CHANGE TO TRUE
+      port: 465,
+      secure: true,
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
@@ -13,7 +13,7 @@ const sendEmail = async (to, subject, html) => {
     });
 
     const info = await transporter.sendMail({
-      from: `"FlowBoard App" <${process.env.EMAIL_USER}>`,
+      from: `"Fluxalab" <${process.env.EMAIL_USER}>`,
       to: to,
       subject: subject,
       html: html, 
