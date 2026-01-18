@@ -1,46 +1,72 @@
-<div class="min-h-screen flex items-center justify-center bg-gray-100">
-  <div class="max-w-md w-full bg-white p-8 rounded-lg shadow-md">
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-600 via-indigo-700 to-purple-800 p-4">
+  
+  <div class="max-w-md w-full bg-white/95 backdrop-blur-sm p-8 rounded-2xl shadow-2xl transform transition-all hover:scale-[1.01]">
 
-    <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">Welcome Back</h2>
+    <div class="text-center mb-8">
+      <div class="text-4xl mb-2">👋</div>
+      <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight">Welcome Back</h2>
+      <p class="text-gray-500 text-sm mt-2">Enter your credentials to access your board</p>
+    </div>
 
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
 
-      <div class="mb-4">
-        <label class="block text-gray-700 text-sm font-bold mb-2">Email</label>
-        <input formControlName="email" type="email"
-          class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-          [ngClass]="{'border-red-500': loginForm.get('email')?.invalid && loginForm.get('email')?.touched}"
-          placeholder="Enter your email">
+      <div class="mb-5">
+        <label class="block text-gray-700 text-sm font-semibold mb-2 ml-1">Email Address</label>
+        <div class="relative">
+          <span class="absolute left-3 top-3 text-gray-400">📧</span>
+          <input 
+            formControlName="email" 
+            type="email"
+            class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-gray-50 focus:bg-white"
+            [ngClass]="{'border-red-500 ring-1 ring-red-100': loginForm.get('email')?.invalid && loginForm.get('email')?.touched}"
+            placeholder="name@example.com"
+          >
+        </div>
         <div *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
-          class="text-red-500 text-xs mt-1">
+          class="text-red-500 text-xs mt-1 ml-1 font-medium animate-pulse">
           Valid email is required
         </div>
       </div>
 
-      <div class="mb-6 relative">
-        <label class="block text-gray-700 text-sm font-bold mb-2">Password</label>
-        <input [type]="showPassword()? 'text' : 'password' " formControlName="password" type="password"
-          class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Enter your password">
-
-        <button type="button" (click)="togglePassword()"
-          class="absolute right-3 top-9 text-gray-500 hover:text-gray-700">
-          {{ showPassword() ? '🙈' : '👁️' }}
-        </button>
+      <div class="mb-8 relative">
+        <label class="block text-gray-700 text-sm font-semibold mb-2 ml-1">Password</label>
+        <div class="relative">
+          <span class="absolute left-3 top-3 text-gray-400">🔒</span>
+          <input 
+            [type]="showPassword() ? 'text' : 'password'" 
+            formControlName="password"
+            class="w-full pl-10 pr-12 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-gray-50 focus:bg-white"
+            placeholder="Enter your password"
+          >
+          <button 
+            type="button" 
+            (click)="togglePassword()"
+            class="absolute right-3 top-3 text-gray-400 hover:text-blue-600 transition p-1"
+          >
+            {{ showPassword() ? '🙈' : '👁️' }}
+          </button>
+        </div>
       </div>
 
-      <button type="submit" [disabled]="loginForm.invalid || isLoading()"
-        class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition duration-200 disabled:bg-blue-300">
-        <span *ngIf="isLoading()">Logging in...</span>
-        <span *ngIf="!isLoading()">Sign In</span>
+      <button 
+        type="submit" 
+        [disabled]="loginForm.invalid || isLoading()"
+        class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold py-3.5 px-4 rounded-xl hover:shadow-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 transform active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
+      >
+        <div class="flex items-center justify-center gap-2">
+          <span *ngIf="isLoading()" class="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></span>
+          <span>{{ isLoading() ? 'Signing in...' : 'Sign In' }}</span>
+        </div>
       </button>
 
     </form>
 
-    <p class="mt-4 text-center text-gray-600 text-sm">
-      Don't have an account?
-      <a routerLink="/register" class="text-blue-600 hover:underline">Register</a>
-    </p>
+    <div class="mt-8 pt-6 border-t border-gray-100 text-center">
+      <p class="text-gray-600 text-sm">
+        Don't have an account?
+        <a routerLink="/register" class="text-blue-600 font-bold hover:text-blue-700 hover:underline transition">Create one now</a>
+      </p>
+    </div>
 
   </div>
 </div>
