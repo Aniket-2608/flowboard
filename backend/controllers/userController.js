@@ -4,62 +4,65 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const sendEmail = require('../utils/sendEmail')
 
-const registerUser = async (req, res)=>{
-    try{
-        const{name, email, password} = req.body;
+const registerUser = async (req, res) => {
+    try {
+        const { name, email, password } = req.body;
 
-        if(!name || !email || !password){
-            return res.status(400).json({message : "Please add all the fields"})
+        if (!name || !email || !password) {
+            return res.status(400).json({ message: "Please add all the fields" });
         }
 
-        const userExists = await User.findOne({email});
-        if(userExists){
-            return res.status(400).json({message : "User already exists with this email"})
+        // Check if user exists
+        const userExists = await User.findOne({ email });
+        if (userExists) {
+            return res.status(400).json({ message: "User already exists with this email" });
         }
 
-        //hash the password
-        // Salt is random data added to the password before hashing to make it stronger.
+        // Hash password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
+        
+        // Generate Token
         const verificationToken = crypto.randomBytes(20).toString('hex');
 
-        //creating the user
+        // Create user in DB
         const user = await User.create({
             name,
             email,
-            password : hashedPassword, // Save the encrypted version
+            password: hashedPassword,
             verificationToken,
-            // Set expiry to 24 hours from now
-            verificationTokenExpires: Date.now() + 24 * 60 * 60 * 1000
-        })
+            verificationTokenExpires: Date.now() + 24 * 60 * 60 * 1000 // 24 hours
+        });
 
-        if(user){
-            const verifyUrl = `${process.env.FRONTEND_URL || 'http://localhost:4200'}/verify?token=${verificationToken}`;
+        if (user) {
+            // 🚀 SPEED FIX: Send response to Frontend IMMEDIATELY
+            res.status(201).json({
+                message: `Registration successful! Please check your email: ${user.email} to verify account.`
+            });
+
+            // 📧 BACKGROUND TASK: Send Email now (User doesn't wait for this)
+            const verifyUrl = `${process.env.FRONTEND_URL}/verify?token=${verificationToken}`;
+            
             const message = `
-                <h1>Welcome to FluxaLab!</h1>
+                <h1>Welcome to FlowBoard!</h1>
                 <p>Please verify your email by clicking the link below:</p>
                 <a href="${verifyUrl}" clicktracking=off>${verifyUrl}</a>
             `;
 
-            try {
-                await sendEmail(user.email, 'Verify your email', message);
-                
-                res.status(201).json({
-                    message: `Registration successful! Please check your email: ${user.email} to verify account.`
+            // We do NOT use 'await' here. We let it run in the background.
+            sendEmail(user.email, 'Verify your email', message)
+                .catch(async (err) => {
+                    console.error("❌ Background Email Failed:", err.message);
+                    // Safety: If email fails, delete the user so they can register again
+                    await User.findByIdAndDelete(user._id);
                 });
-            } catch (emailError) {
-                // If email fails, delete the user so they can try again
-                await User.findByIdAndDelete(user._id);
-                return res.status(500).json({ message: "Email could not be sent. Please try again." });
-            }
-        }else{
-            res.status(400).json({
-                message : 'Invalid User Data'
-            })
+
+        } else {
+            res.status(400).json({ message: 'Invalid User Data' });
         }
-    }
-    catch(error){
-        res.status(500).json({message : error.message});
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: error.message });
     }
 };
 
