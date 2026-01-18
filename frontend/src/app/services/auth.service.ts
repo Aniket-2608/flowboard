@@ -26,6 +26,10 @@ export class AuthService {
     )
   }
 
+  verifyEmail(token : string){
+    return this.http.post(`${this.apiUrl}/users/verify`, {token})
+  }
+
   login(userData: LoginRequest) {
     return this.http.post(`${this.apiUrl}/users/login`, userData).pipe(
       tap((response: any) => {
