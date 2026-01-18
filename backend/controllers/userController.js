@@ -100,7 +100,7 @@ const verifyEmail = async (req, res)=>{
 //login
 const loginUser = async(req, res)=>{
     try{
-        const {email, password} = await req.body;
+        const {email, password} = req.body;
 
         //check if the user exists
         const user = await User.findOne({email});
