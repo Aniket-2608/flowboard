@@ -9,7 +9,7 @@ const app = express();
 app.use(cors({
   origin: [
     'http://localhost:4200',
-    'https://fluxalab.vercel.app',
+    'https://flowboard-3b6h.vercel.app',
   ],
   credentials: true
 }));
