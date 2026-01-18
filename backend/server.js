@@ -13,7 +13,7 @@ app.use(cors({
   origin: [
     'http://localhost:4200',
     'https://fluxalab.vercel.app', // Your Frontend
-    'https://flowboard-api.vercel.app' // (Optional) Your future backend URL
+    'https://flowboard-3m4r.vercel.app' // (Optional) Your future backend URL
   ],
   credentials: true
 }));

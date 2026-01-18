@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://flowboard-api-0tv6.onrender.com/api'  // 👈 Points to Render
+  apiUrl: 'https://flowboard-3m4r.vercel.app/api' 
 };
