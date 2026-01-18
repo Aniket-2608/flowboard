@@ -12,49 +12,48 @@ const registerUser = async (req, res) => {
             return res.status(400).json({ message: "Please add all the fields" });
         }
 
-        // Check if user exists
         const userExists = await User.findOne({ email });
         if (userExists) {
             return res.status(400).json({ message: "User already exists with this email" });
         }
 
-        // Hash password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
-        
-        // Generate Token
         const verificationToken = crypto.randomBytes(20).toString('hex');
 
-        // Create user in DB
         const user = await User.create({
             name,
             email,
             password: hashedPassword,
             verificationToken,
-            verificationTokenExpires: Date.now() + 24 * 60 * 60 * 1000 // 24 hours
+            verificationTokenExpires: Date.now() + 24 * 60 * 60 * 1000
         });
 
         if (user) {
-            // 🚀 SPEED FIX: Send response to Frontend IMMEDIATELY
+            // Send response immediately
             res.status(201).json({
-                message: `Registration successful! Please check your email: ${user.email} to verify account.`
+                message: `Registration successful! Please check ${user.email} to verify your account.`
             });
 
-            // 📧 BACKGROUND TASK: Send Email now (User doesn't wait for this)
+            // Try sending email in background
             const verifyUrl = `${process.env.FRONTEND_URL}/verify?token=${verificationToken}`;
-            
             const message = `
                 <h1>Welcome to FlowBoard!</h1>
                 <p>Please verify your email by clicking the link below:</p>
                 <a href="${verifyUrl}" clicktracking=off>${verifyUrl}</a>
             `;
 
-            // We do NOT use 'await' here. We let it run in the background.
             sendEmail(user.email, 'Verify your email', message)
-                .catch(async (err) => {
-                    console.error("❌ Background Email Failed:", err.message);
-                    // Safety: If email fails, delete the user so they can register again
-                    await User.findByIdAndDelete(user._id);
+                .then(result => {
+                    if (result) {
+                        console.log('✅ Verification email sent');
+                    } else {
+                        console.log('⚠️ Email failed but user created');
+                    }
+                })
+                .catch(err => {
+                    console.error('❌ Email send failed:', err.message);
+                    // Don't delete user - they can request resend
                 });
 
         } else {
