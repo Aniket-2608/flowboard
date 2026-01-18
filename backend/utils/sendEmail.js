@@ -1,25 +1,29 @@
 const nodemailer = require('nodemailer');
 
-const sendEmail = async (to, subject, text) => {
+const sendEmail = async (to, subject, html) => {
   try {
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: 'smtp.gmail.com', // Explicitly use Gmail host
+      port: 465,              // 👈 CHANGE TO 465 (SSL)
+      secure: true,           // 👈 CHANGE TO TRUE
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
       },
     });
 
-    await transporter.sendMail({
-      from: `"FlowBoard Team" <${process.env.EMAIL_USER}>`,
+    const info = await transporter.sendMail({
+      from: `"FlowBoard App" <${process.env.EMAIL_USER}>`,
       to: to,
       subject: subject,
-      text: text,
+      html: html, 
     });
 
-    console.log('✅ Email sent successfully to:', to);
+    console.log('✅ Email sent successfully:', info.messageId);
   } catch (error) {
     console.error('❌ Email could not be sent:', error);
+    // We throw the error so the Controller knows to delete the user
+    throw new Error('Email sending failed'); 
   }
 };
 
