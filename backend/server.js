@@ -24,39 +24,41 @@ app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/tasks', require('./routes/taskRoutes'));
 
 // ----------------------------------------------------
-// 🛠️ FIX: Optimized Database Connection for Serverless
+// 🛠️ FIX: Self-Healing Database Connection
 // ----------------------------------------------------
-let isConnected = false; // Track connection status
-
 const connectDB = async () => {
-    if (isConnected) {
-        return; // Already connected, skip
+    // 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
+    const state = mongoose.connection.readyState;
+
+    // If we are already connected (1), stop here. We are good.
+    if (state === 1) {
+        return;
+    }
+
+    // If we are connecting (2), wait a moment for it to finish
+    if (state === 2) {
+        return mongoose.connection.asPromise();
     }
 
     try {
-        const conn = await mongoose.connect(process.env.MONGO_URI, {
-            // These options prevent timeouts in serverless
+        await mongoose.connect(process.env.MONGO_URI, {
             serverSelectionTimeoutMS: 5000, 
             socketTimeoutMS: 45000,
         });
-        
-        isConnected = !!conn.connections[0].readyState;
-        console.log(`MongoDB Connected: ${conn.connection.host}`);
+        console.log(`MongoDB Connected: ${mongoose.connection.host}`);
     } catch (error) {
         console.error(`MongoDB Error: ${error.message}`);
-        // Don't exit process in serverless, just throw error
         throw error;
     }
 }
 
-// ----------------------------------------------------
-// 🛠️ FIX: Middleware to ensure DB connection per request
-// ----------------------------------------------------
+// Middleware to ensure DB is alive before every request
 app.use(async (req, res, next) => {
     try {
-        await connectDB(); // Wait for DB before processing any route
+        await connectDB();
         next();
     } catch (error) {
+        console.error("Database middleware failed:", error);
         res.status(500).json({ message: "Database Connection Failed" });
     }
 });
@@ -68,7 +70,6 @@ app.get('/', (req, res) => {
 
 const PORT = process.env.PORT || 5001;
 
-// Only listen locally
 if (process.env.NODE_ENV !== 'production') {
     app.listen(PORT, () => {
         console.log(`Server is running on ${PORT}`);
