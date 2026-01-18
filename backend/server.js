@@ -8,12 +8,11 @@ dotenv.config();
 
 const app = express();
 
-// Middlewares
 app.use(cors({
   origin: [
-    'http://localhost:4200',
-    'https://fluxalab.vercel.app', // Your Frontend
-    'https://flowboard-3m4r.vercel.app' // (Optional) Your future backend URL
+    'http://localhost:4200',            
+    'https://fluxalab.vercel.app',      
+    'https://flowboard-3m4r.vercel.app' 
   ],
   credentials: true
 }));
@@ -24,32 +23,57 @@ app.use(express.json());
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/tasks', require('./routes/taskRoutes'));
 
-// Database connection 
+// ----------------------------------------------------
+// 🛠️ FIX: Optimized Database Connection for Serverless
+// ----------------------------------------------------
+let isConnected = false; // Track connection status
+
 const connectDB = async () => {
+    if (isConnected) {
+        return; // Already connected, skip
+    }
+
     try {
-        const conn = await mongoose.connect(process.env.MONGO_URI);
+        const conn = await mongoose.connect(process.env.MONGO_URI, {
+            // These options prevent timeouts in serverless
+            serverSelectionTimeoutMS: 5000, 
+            socketTimeoutMS: 45000,
+        });
+        
+        isConnected = !!conn.connections[0].readyState;
         console.log(`MongoDB Connected: ${conn.connection.host}`);
     } catch (error) {
-        console.error(`Error: ${error.message}`);
-        process.exit(1);
+        console.error(`MongoDB Error: ${error.message}`);
+        // Don't exit process in serverless, just throw error
+        throw error;
     }
 }
 
-// Execute Connection
-connectDB();
+// ----------------------------------------------------
+// 🛠️ FIX: Middleware to ensure DB connection per request
+// ----------------------------------------------------
+app.use(async (req, res, next) => {
+    try {
+        await connectDB(); // Wait for DB before processing any route
+        next();
+    } catch (error) {
+        res.status(500).json({ message: "Database Connection Failed" });
+    }
+});
 
-// ✅ FIXED Test Route (Simple and Safe)
+// Test Route
 app.get('/', (req, res) => {
     res.send("API is Running");
 });
 
-// Start the Server
 const PORT = process.env.PORT || 5001;
 
+// Only listen locally
 if (process.env.NODE_ENV !== 'production') {
     app.listen(PORT, () => {
         console.log(`Server is running on ${PORT}`);
     });
 }
 
+// Export for Vercel
 module.exports = app;
