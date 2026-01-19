@@ -5,13 +5,11 @@ const crypto = require('crypto');
 const sendEmail = require('../utils/sendEmail')
 
 const registerUser = async (req, res) => {
-    // 1. Validate Input
     const { name, email, password } = req.body;
     if (!name || !email || !password) {
         return res.status(400).json({ message: "Please add all the fields" });
     }
 
-    // 2. Check Exists
     const userExists = await User.findOne({ email });
     if (userExists) {
         return res.status(400).json({ message: "User already exists with this email" });
@@ -20,7 +18,6 @@ const registerUser = async (req, res) => {
     let user = null;
 
     try {
-        // 3. Create User (Temporarily)
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
         const verificationToken = crypto.randomBytes(20).toString('hex');
@@ -41,25 +38,18 @@ const registerUser = async (req, res) => {
             <a href="${verifyUrl}" clicktracking=off>${verifyUrl}</a>
         `;
 
-        // 5. Try Sending Email (AWAIT IT!)
-        // We await this so Vercel keeps the server alive
         const emailResult = await sendEmail(user.email, 'Verify your email', message);
 
         if (emailResult) {
-            // ✅ Success: Email sent, keep user, send response
             return res.status(201).json({
                 message: `Registration successful! Please check ${user.email} to verify your account.`
             });
         } else {
-            // ❌ Fail: Email failed technically (returned null)
-            // Rollback: Delete the user we just made
             await User.findByIdAndDelete(user._id);
             return res.status(500).json({ message: "Email could not be sent. Please try again." });
         }
 
     } catch (error) {
-        // ❌ Fail: Any other crash
-        // Rollback if user was created
         if (user) {
             await User.findByIdAndDelete(user._id);
         }
@@ -70,7 +60,7 @@ const registerUser = async (req, res) => {
 
 const verifyEmail = async (req, res)=>{
     try{
-        const {token} = req.body // token will be sent front the frontend
+        const {token} = req.body
 
         if(!token){
             return res.status(400).json({message : "Invalid User TOKEN"})
@@ -78,7 +68,7 @@ const verifyEmail = async (req, res)=>{
 
         const user = await User.findOne({
             verificationToken : token,
-            verificationTokenExpires : { $gt: Date.now() } // $gt means "Greater Than" now
+            verificationTokenExpires : { $gt: Date.now() }
         })
 
         if (!user) {
@@ -87,7 +77,7 @@ const verifyEmail = async (req, res)=>{
 
         // verify the user.
         user.isVerified = true;
-        user.verificationToken = undefined; // Clear the token
+        user.verificationToken = undefined;
         user.verificationTokenExpires = undefined;
         await user.save();
 
@@ -105,11 +95,8 @@ const loginUser = async(req, res)=>{
     try{
         const {email, password} = req.body;
 
-        //check if the user exists
         const user = await User.findOne({email});
 
-        //check if the password matches
-        //comparing the plain text entered password with the hashed one.
         if(user && (await bcrypt.compare(password, user.password))){
             if (!user.isVerified) {
                 return res.status(401).json({ 
@@ -134,7 +121,6 @@ const loginUser = async(req, res)=>{
     }
 }
 
-//Helper Function to generate token
 const generateToken = (id)=>{
     return jwt.sign({id}, process.env.JWT_SECRET, {
         expiresIn : '30d',

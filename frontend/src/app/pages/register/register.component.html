@@ -45,12 +45,20 @@
         <label class="block text-gray-700 text-sm font-semibold mb-2 ml-1">Password</label>
         <div class="relative">
           <span class="absolute left-3 top-3 text-gray-400">🔒</span>
-          <input 
+          <input
+            [type]="showPassword() ? 'text' : 'password'"
             formControlName="password" 
             type="password" 
             class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all bg-gray-50 focus:bg-white"
             placeholder="******"
           >
+          <button 
+            type="button" 
+            (click)="togglePassword()"
+            class="absolute right-3 top-3 text-gray-400 hover:text-blue-600 transition p-1"
+          >
+            {{ showPassword() ? '🙈' : '👁️' }}
+          </button>
         </div>
         <div *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched" class="text-red-500 text-xs mt-1 ml-1 font-medium">
           Min 6 characters required
@@ -61,13 +69,21 @@
         <label class="block text-gray-700 text-sm font-semibold mb-2 ml-1">Confirm Password</label>
         <div class="relative">
           <span class="absolute left-3 top-3 text-gray-400">🔐</span>
-          <input 
+          <input
+            [type]="showPassword() ? 'text' : 'password'"
             formControlName="confirmPassword" 
             type="password" 
             class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all bg-gray-50 focus:bg-white"
             [ngClass]="{'border-red-500': registerForm.hasError('mismatch') && registerForm.get('confirmPassword')?.touched}"
             placeholder="Repeat password"
           >
+          <button 
+            type="button" 
+            (click)="togglePassword()"
+            class="absolute right-3 top-3 text-gray-400 hover:text-blue-600 transition p-1"
+          >
+            {{ showPassword() ? '🙈' : '👁️' }}
+          </button>
         </div>
         <div *ngIf="registerForm.hasError('mismatch') && registerForm.get('confirmPassword')?.touched" class="text-red-500 text-xs mt-1 ml-1 font-medium">
           Passwords do not match

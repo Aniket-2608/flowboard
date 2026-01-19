@@ -6,7 +6,6 @@ const Task = require('../models/Task');
 // @access  Private
 
 const getTasks = async (req, res)=>{
-    // Only find tasks where user ID matches the logged-in user
     const tasks = await Task.find({ user : req.user.id });
     res.status(200).json(tasks);
 }
@@ -40,7 +39,7 @@ const createTask = async (req, res)=>{
         description : req.body.description,
         status : req.body.status,
         priority : req.body.priority,
-        user : req.user.id // comes from the 'protect' middelware
+        user : req.user.id
     });
     res.status(200).json(task);
 }
@@ -62,7 +61,7 @@ const updateTask = async (req, res)=>{
     }
 
     const updatedTask = await Task.findByIdAndUpdate(req.params.id, req.body, {
-        new : true, // Returns the updated Version not the old one
+        new : true,
     })
 
     res.status(200).json({updatedTask})
@@ -83,7 +82,7 @@ const deleteTask = async (req, res)=>{
         return res.status(401).json({ message: 'User not authorized' });
     }
 
-    await task.deleteOne(); // Use deleteOne() instead of remove()
+    await task.deleteOne();
     res.status(200).json({ id: req.params.id });
 }
 

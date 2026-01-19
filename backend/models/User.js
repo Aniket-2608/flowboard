@@ -4,34 +4,33 @@ const userSchema = mongoose.Schema(
     {
         name: {
             type: String,
-            required: true, //Validation - Name is mandatory
+            required: true,
         },
         email: {
             type: String,
             required: true,
-            unique: true, //Validation - No two users can have same identical email ids.
+            unique: true,
         },
         password: {
             type: String,
-            required: true, //Validation - Name is mandatory
+            required: true,
         },
-        //For RBAC - Role Based Access Control
+       
         role: {
             type: String,
-            enum: ['user', 'admin'], // only these two values are allowed.
-            default: 'user', // IF not specified, everyone will be a normal user
+            enum: ['user', 'admin'],
+            default: 'user',
         },
         isVerified: {
             type: Boolean,
-            default: false // 👈 Default is NOT verified
+            default: false
         },
-        verificationToken: String, // To store the temporary code
+        verificationToken: String,
         verificationTokenExpires: Date
     },
     {
-        Timestamps: true, // Automatically creates created at and updated at fields.
+        Timestamps: true,
     }
 );
 
-//Export the Model
 module.exports = mongoose.model('User', userSchema);

@@ -25,7 +25,7 @@ const sendEmail = async (to, subject, html) => {
     return info;
   } catch (error) {
     console.error('❌ Email error:', error.message);
-    return null; // Returning null triggers the rollback in the controller
+    return null;
   }
 };
 

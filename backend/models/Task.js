@@ -5,7 +5,7 @@ const taskSchema = mongoose.Schema(
         user : {
             type : mongoose.Schema.Types.ObjectId,
             required : true,
-            ref : 'User' // Refers to the 'User' Model
+            ref : 'User'
         },
         title: {
             type: String,
@@ -14,13 +14,11 @@ const taskSchema = mongoose.Schema(
         description: {
             type: String,
         },
-        // KANBAN STATUS (The Columns)
         status: {
             type: String,
             enum: ['todo', 'inprogress', 'done'],
             default: 'todo',
         },
-        // PRIORITY
         priority: {
             type: String,
             enum: ['low', 'medium', 'high'],

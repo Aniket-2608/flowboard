@@ -20,6 +20,7 @@ export class RegisterComponent {
   private toastService = inject(ToastService);
 
   isLoading = signal<boolean>(false);
+  showPassword = signal<boolean>(false);
 
   registerForm: FormGroup = this.fb.group({
     name: ['', [Validators.required, Validators.minLength(3)]],
@@ -61,5 +62,9 @@ export class RegisterComponent {
         this.toastService.show(msg, 'error');
       }
     });
+  }
+
+  togglePassword() {
+    this.showPassword.update(value => !value);
   }
 }
