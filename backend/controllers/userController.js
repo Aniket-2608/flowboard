@@ -5,23 +5,27 @@ const crypto = require('crypto');
 const sendEmail = require('../utils/sendEmail')
 
 const registerUser = async (req, res) => {
+    // 1. Validate Input
+    const { name, email, password } = req.body;
+    if (!name || !email || !password) {
+        return res.status(400).json({ message: "Please add all the fields" });
+    }
+
+    // 2. Check Exists
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+        return res.status(400).json({ message: "User already exists with this email" });
+    }
+
+    let user = null;
+
     try {
-        const { name, email, password } = req.body;
-
-        if (!name || !email || !password) {
-            return res.status(400).json({ message: "Please add all the fields" });
-        }
-
-        const userExists = await User.findOne({ email });
-        if (userExists) {
-            return res.status(400).json({ message: "User already exists with this email" });
-        }
-
+        // 3. Create User (Temporarily)
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
         const verificationToken = crypto.randomBytes(20).toString('hex');
 
-        const user = await User.create({
+        user = await User.create({
             name,
             email,
             password: hashedPassword,
@@ -29,39 +33,38 @@ const registerUser = async (req, res) => {
             verificationTokenExpires: Date.now() + 24 * 60 * 60 * 1000
         });
 
-        if (user) {
-            // Send response immediately
-            res.status(201).json({
+        // 4. Construct Email
+        const verifyUrl = `${process.env.FRONTEND_URL}/verify?token=${verificationToken}`;
+        const message = `
+            <h1>Welcome to FlowBoard!</h1>
+            <p>Please verify your email by clicking the link below:</p>
+            <a href="${verifyUrl}" clicktracking=off>${verifyUrl}</a>
+        `;
+
+        // 5. Try Sending Email (AWAIT IT!)
+        // We await this so Vercel keeps the server alive
+        const emailResult = await sendEmail(user.email, 'Verify your email', message);
+
+        if (emailResult) {
+            // ✅ Success: Email sent, keep user, send response
+            return res.status(201).json({
                 message: `Registration successful! Please check ${user.email} to verify your account.`
             });
-
-            // Try sending email in background
-            const verifyUrl = `${process.env.FRONTEND_URL}/verify?token=${verificationToken}`;
-            const message = `
-                <h1>Welcome to FlowBoard!</h1>
-                <p>Please verify your email by clicking the link below:</p>
-                <a href="${verifyUrl}" clicktracking=off>${verifyUrl}</a>
-            `;
-
-            sendEmail(user.email, 'Verify your email', message)
-                .then(result => {
-                    if (result) {
-                        console.log('✅ Verification email sent');
-                    } else {
-                        console.log('⚠️ Email failed but user created');
-                    }
-                })
-                .catch(err => {
-                    console.error('❌ Email send failed:', err.message);
-                    // Don't delete user - they can request resend
-                });
-
         } else {
-            res.status(400).json({ message: 'Invalid User Data' });
+            // ❌ Fail: Email failed technically (returned null)
+            // Rollback: Delete the user we just made
+            await User.findByIdAndDelete(user._id);
+            return res.status(500).json({ message: "Email could not be sent. Please try again." });
         }
+
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: error.message });
+        // ❌ Fail: Any other crash
+        // Rollback if user was created
+        if (user) {
+            await User.findByIdAndDelete(user._id);
+        }
+        console.error("Registration Error:", error.message);
+        res.status(500).json({ message: "Registration failed. Please try again." });
     }
 };
 

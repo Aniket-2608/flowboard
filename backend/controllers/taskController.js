@@ -21,7 +21,6 @@ const getTask = async(req, res)=>{
         return res.status(404).json({message : 'Task not found'});
     }
 
-    //Checking ownership
     if(task.user.toString() != req.user.id){
         return res.status(401).json({message : 'User not authorized'})
     }

@@ -16,7 +16,6 @@ app.use(cors({
 
 app.use(express.json());
 
-// ✅ CONNECT DB FIRST
 const connectDB = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI);
@@ -29,7 +28,6 @@ const connectDB = async () => {
 
 connectDB();
 
-// ✅ ROUTES AFTER DB
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/tasks', require('./routes/taskRoutes'));
 

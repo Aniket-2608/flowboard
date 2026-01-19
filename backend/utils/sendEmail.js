@@ -4,21 +4,16 @@ const sendEmail = async (to, subject, html) => {
   try {
     const transporter = nodemailer.createTransport({
       host: 'smtp.gmail.com',
-      port: 465,              // 👈 Stick to 465 (SSL) for Cloud Servers
-      secure: true,           // 👈 Must be true for 465
+      port: 465,
+      secure: true,
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
       },
-      // 🛠️ NETWORK FIXES FOR RENDER
-      family: 4,              // Force IPv4 (Crucial for Gmail timeouts)
-      connectionTimeout: 10000, 
-      greetingTimeout: 5000,
-      socketTimeout: 10000,
+      // Keep family: 4 to prevent IPv6 issues on Vercel
+      family: 4, 
     });
 
-    // We removed 'await transporter.verify()' to make it faster
-    
     const info = await transporter.sendMail({
       from: `"FluxaLab Team" <${process.env.EMAIL_USER}>`,
       to: to,
@@ -30,7 +25,7 @@ const sendEmail = async (to, subject, html) => {
     return info;
   } catch (error) {
     console.error('❌ Email error:', error.message);
-    return null;
+    return null; // Returning null triggers the rollback in the controller
   }
 };
 
