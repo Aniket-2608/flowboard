@@ -1,7 +1,7 @@
 import { inject, Injectable, signal} from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
-import { tap } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
 import { LoginRequest, RegisterRequest } from '../models/authModel';
 
@@ -64,5 +64,15 @@ export class AuthService {
   // Helper: Check if logged in
   isLoggedIn(): boolean {
     return !!localStorage.getItem('token');
+  }
+
+  forgotPassword(email : string){
+    return this.http.post(`${this.apiUrl}/users/forgot-password`, {email})
+  }
+
+  
+  resetPassword(token:string, password:string) : Observable<any>{
+    const body = { password: password }
+    return this.http.put(`${this.apiUrl}/users/reset-password/${token}`, body)
   }
 }

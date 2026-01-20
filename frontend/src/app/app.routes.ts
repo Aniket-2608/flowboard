@@ -6,6 +6,8 @@ import { authGuard } from './guards/auth.guard';
 import { AddTaskComponent } from './pages/add-task/add-task.component';
 import { VerifyEmailComponent } from './pages/verify-email/verify-email.component';
 import { LandingComponent } from './pages/landing/landing.component';
+import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
 
 export const routes: Routes = [
     { path: '', component: LandingComponent },
@@ -14,6 +16,8 @@ export const routes: Routes = [
     {path: 'dashboard', component : DashboardComponent, canActivate : [authGuard]},
     {path: 'add-task/:id', component : AddTaskComponent, canActivate : [authGuard]},
     {path: 'verify', component : VerifyEmailComponent},
+    { path: 'forgot-password', component: ForgotPasswordComponent },
+    { path: 'reset-password/:token', component: ResetPasswordComponent },
 
     {path: '', redirectTo: 'dashboard', pathMatch : 'full'}, // default to login
     {path: '**', redirectTo: 'login', pathMatch : 'full'}, 

@@ -29,7 +29,14 @@
       </div>
 
       <div class="mb-8 relative">
-        <label class="block text-gray-700 text-sm font-semibold mb-2 ml-1">Password</label>
+        <div class="flex items-center justify-between mb-2 ml-1">
+          <label class="block text-gray-700 text-sm font-semibold">Password</label>
+          
+          <a routerLink="/forgot-password" class="text-sm text-blue-600 hover:text-blue-800 font-semibold cursor-pointer transition-colors">
+            Forgot Password?
+          </a>
+        </div>
+
         <div class="relative">
           <span class="absolute left-3 top-3 text-gray-400">🔒</span>
           <input 
