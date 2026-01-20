@@ -24,6 +24,13 @@ const taskSchema = mongoose.Schema(
             enum: ['low', 'medium', 'high'],
             default: 'low',
         },
+        dueDate: {
+            type: Date,
+        },
+        deadlineNotificationSent: {
+            type: Boolean,
+            default: false
+        }
     },
     {
         timestamps: true,
