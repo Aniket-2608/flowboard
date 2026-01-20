@@ -127,8 +127,89 @@ const generateToken = (id)=>{
     });
 }
 
+// @desc    Forgot Password - Send Reset Link
+// @route   POST /api/users/forgot-password
+// @access  Public
+const forgotPassword = async (req, res)=>{
+    const {email} = req.body;
+    try{
+        const user = await User.findOne({email});
+        if(!user){
+            res.status(404).json({message : "User Not Found"});
+        }
+
+        const resetToken = crypto.randomBytes(20).toString('hex');
+
+        //hasing and saving to db
+        user.resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex')
+
+        user.resetPasswordExpire = Date.now() + 10*60*1000;
+        await user.save();
+
+        // 4. Create Reset URL (Points to Frontend)
+        // Note: We send the un-hashed token to the user
+        const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+
+        const message = `
+            <h1>Password Reset Request</h1>
+            <p>You requested a password reset. Please go to this link to set a new password:</p>
+            <a href="${resetUrl}" clicktracking=off>${resetUrl}</a>
+            <p>This link expires in 10 minutes.</p>
+        `
+
+        try {
+            await sendEmail(user.email, 'Password Reset Token', message);
+            res.status(200).json({ success: true, data: "Email sent" });
+        } catch (err) {
+            console.error(err);
+            // If email fails, clear the fields so they can try again
+            user.resetPasswordToken = undefined;
+            user.resetPasswordExpire = undefined;
+            await user.save();
+            return res.status(500).json({ message: "Email could not be sent" });
+        }
+    }
+    catch(err){
+        res.status(500).json({ message: err.message });
+    }
+}
+
+const resetPassword = async (req, res) => {
+    try {
+        // 1. Get token from URL and hash it (to match DB)
+        const resetPasswordToken = crypto.createHash('sha256').update(req.params.resetToken).digest('hex');
+
+        // 2. Find user with valid token and not expired
+        const user = await User.findOne({
+            resetPasswordToken,
+            resetPasswordExpire: { $gt: Date.now() } // $gt means "Greater Than" (Time hasn't passed)
+        });
+
+        if (!user) {
+            return res.status(400).json({ message: "Invalid or expired token" });
+        }
+
+        // 3. Set new password
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(req.body.password, salt);
+
+        // 4. Clear reset fields
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpire = undefined;
+
+        await user.save();
+
+        res.status(200).json({ success: true, message: "Password updated successfully" });
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports ={
     registerUser,
     loginUser,
-    verifyEmail
+    verifyEmail,
+    forgotPassword,
+    resetPassword
 }

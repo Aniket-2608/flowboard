@@ -25,11 +25,13 @@ const userSchema = mongoose.Schema(
             type: Boolean,
             default: false
         },
+        resetPasswordToken: String,
+        resetPasswordExpire: Date,
         verificationToken: String,
         verificationTokenExpires: Date
     },
     {
-        Timestamps: true,
+        timestamps: true,
     }
 );
 
