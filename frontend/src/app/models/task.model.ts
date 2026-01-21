@@ -7,6 +7,7 @@ export interface Task {
   description?: string;
   status: TaskStatus;
   priority: TaskPriority;
+  dueDate : string | Date;
   createdAt?: string;
   updatedAt?: string;
 }

@@ -15,7 +15,7 @@ const sendEmail = async (to, subject, html) => {
     });
 
     const info = await transporter.sendMail({
-      from: `"FluxaLab Team" <${process.env.EMAIL_USER}>`,
+      from: `"Flowboard Team" <${process.env.EMAIL_USER}>`,
       to: to,
       subject: subject,
       html: html,

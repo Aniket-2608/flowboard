@@ -15,22 +15,22 @@ export class AddTaskComponent implements OnInit {
   private fb = inject(FormBuilder);
   private taskService = inject(TaskService);
   private router = inject(Router);
-  private route = inject(ActivatedRoute); // <--- Inject Route
+  private route = inject(ActivatedRoute);
   private toastService = inject(ToastService);
 
   isLoading = signal(false);
-  isEditMode = signal(false); // <--- Track mode
+  isEditMode = signal(false);
   currentTaskId: string = '';
 
   taskForm: FormGroup = this.fb.group({
     title: ['', [Validators.required, Validators.minLength(3)]],
     description: [''],
     priority: ['low'],
-    status: ['todo']
+    status: ['todo'],
+    dueDate: [''] // ✅ Added dueDate control
   });
 
   ngOnInit() {
-    // Check the URL parameter
     const id = this.route.snapshot.paramMap.get('id');
 
     if (id && id !== 'new' && id !== '0') {
@@ -39,7 +39,7 @@ export class AddTaskComponent implements OnInit {
       this.currentTaskId = id;
       this.loadTaskData(id);
     } else {
-      // CREATE MODE (Do nothing, form is already empty)
+      // CREATE MODE
       this.isEditMode.set(false);
     }
   }
@@ -49,7 +49,15 @@ export class AddTaskComponent implements OnInit {
     this.taskService.getTask(id).subscribe({
       next: (task) => {
         this.isLoading.set(false);
-        this.taskForm.patchValue(task); // Fill the form
+        
+        // 🛠️ FIX: Format the date before patching the form
+        // We create a new object so we don't mutate the original task response
+        const formValues = {
+          ...task,
+          dueDate: task.dueDate ? this.formatDateForInput(task.dueDate) : ''
+        };
+
+        this.taskForm.patchValue(formValues);
       },
       error: () => {
         this.isLoading.set(false);
@@ -65,13 +73,11 @@ export class AddTaskComponent implements OnInit {
     this.isLoading.set(true);
 
     if (this.isEditMode()) {
-      // UPDATE EXISTING
       this.taskService.updateTask(this.currentTaskId, this.taskForm.value).subscribe({
         next: () => this.handleSuccess('Task updated!'),
         error: () => this.handleError('Failed to update task')
       });
     } else {
-      // CREATE NEW
       this.taskService.createTask(this.taskForm.value).subscribe({
         next: () => this.handleSuccess('Task created!'),
         error: () => this.handleError('Failed to create task')
@@ -88,5 +94,20 @@ export class AddTaskComponent implements OnInit {
   private handleError(message: string) {
     this.isLoading.set(false);
     this.toastService.show(message, 'error');
+  }
+
+  // 🛠️ Helper for <input type="datetime-local">
+  private formatDateForInput(dateString: string | Date): string {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) return '';
+
+    // Adjust for local timezone offset so the input shows the correct local time
+    const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+    
+    // Return "YYYY-MM-DDTHH:mm" (First 16 chars)
+    return localDate.toISOString().slice(0, 16);
   }
 }
