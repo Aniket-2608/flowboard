@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators, FormGroup, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { TaskService } from '../../services/task.service';
 import { ToastService } from '../../services/toast.service';
@@ -21,13 +21,14 @@ export class AddTaskComponent implements OnInit {
   isLoading = signal(false);
   isEditMode = signal(false);
   currentTaskId: string = '';
+  minDate : string ='';
 
   taskForm: FormGroup = this.fb.group({
     title: ['', [Validators.required, Validators.minLength(3)]],
     description: [''],
     priority: ['low'],
     status: ['todo'],
-    dueDate: [''] // ✅ Added dueDate control
+    dueDate: ['', [this.futureDateValidator()]] // ✅ Added dueDate control
   });
 
   ngOnInit() {
@@ -42,6 +43,25 @@ export class AddTaskComponent implements OnInit {
       // CREATE MODE
       this.isEditMode.set(false);
     }
+  }
+
+  private updateMinDate(){
+    const nowDate = new Date();
+
+    const localNow = new Date(nowDate.getTime()- (nowDate.getTimezoneOffset()*6000));
+    this.minDate = localNow.toISOString().slice(0,16);
+  }
+
+  private futureDateValidator(){
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (!control.value) return null; // Allow empty (optional)
+      
+      const inputDate = new Date(control.value);
+      const now = new Date();
+      
+      // Check if input date is strictly smaller than now
+      return inputDate < now ? { pastDate: true } : null;
+    };
   }
 
   loadTaskData(id: string) {
